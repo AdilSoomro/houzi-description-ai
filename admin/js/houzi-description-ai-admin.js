@@ -60,6 +60,83 @@
             });
         });
 
+        // Single Post Generation
+        var $singleBtn = $('#houzi-generate-single-btn');
+        var $singleStatus = $('#houzi-ai-single-status');
+
+        $singleBtn.on('click', function (e) {
+            e.preventDefault();
+
+            var post_id = houzi_ai_obj.post_id;
+            if (!post_id) {
+                alert('Post ID not found.');
+                return;
+            }
+
+            $singleBtn.prop('disabled', true).text('Generating...');
+            $singleStatus.html('<span style="color: blue;">AI is writing... please wait.</span>');
+
+            $.ajax({
+                url: houzi_ai_obj.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'houzi_generate_description',
+                    post_id: post_id,
+                    nonce: houzi_ai_obj.nonce
+                },
+                success: function (response) {
+                    if (response.success) {
+                        var description = response.data.description;
+                        var updated = false;
+
+                        // Try Gutenberg (Block Editor)
+                        try {
+                            if (window.wp && wp.data && typeof wp.data.dispatch === 'function' && wp.data.dispatch('core/editor')) {
+                                wp.data.dispatch('core/editor').editPost({ content: description });
+                                updated = true;
+                            }
+                        } catch (err) {
+                            console.error('Houzi AI: Gutenberg update failed', err);
+                        }
+
+                        // Try Classic Editor (TinyMCE)
+                        if (!updated && window.tinymce && tinymce.get('content')) {
+                            try {
+                                tinymce.get('content').setContent(description);
+                                updated = true;
+                            } catch (err) {
+                                console.error('Houzi AI: TinyMCE update failed', err);
+                            }
+                        }
+
+                        // Try plain textarea fallback
+                        if (!updated && $('#content').length) {
+                            $('#content').val(description);
+                            updated = true;
+                        }
+
+                        if (updated) {
+                            $singleStatus.html('<span style="color: green;">Success! Description inserted into editor. Please click "Update" or "Save" to apply changes permanently.</span>');
+                        } else {
+                            $singleStatus.html('<span style="color: green;">Success! Description updated in database. <a href="javascript:location.reload();">Refresh page</a> to see it in the editor.</span>');
+                        }
+                        $singleBtn.text('Regenerate AI Description');
+                    } else {
+                        $singleStatus.html('<span style="color: red;">Error: ' + response.data + '</span>');
+                    }
+                },
+                error: function () {
+                    $singleStatus.html('<span style="color: red;">AJAX error occurred.</span>');
+                },
+                complete: function () {
+                    $singleBtn.prop('disabled', false);
+                    if ($singleBtn.text() === 'Generating...') {
+                        $singleBtn.text('Generate AI Description');
+                    }
+                }
+            });
+        });
+
         function processProperties(ids, index, total) {
             if (index >= total) {
                 $log.append('<div style="color:green; font-weight:bold;">Process completed!</div>');

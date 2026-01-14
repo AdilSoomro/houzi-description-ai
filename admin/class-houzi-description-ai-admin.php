@@ -85,7 +85,7 @@ class Houzi_Description_Ai_Admin
 	 *
 	 * @since    1.0.0
 	 */
-	public function enqueue_scripts()
+	public function enqueue_scripts($hook)
 	{
 
 		/**
@@ -100,12 +100,55 @@ class Houzi_Description_Ai_Admin
 		 * class.
 		 */
 
-		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/houzi-description-ai-admin.js', array('jquery'), $this->version, false);
+		$deps = array('jquery');
+		if (in_array($hook, array('post.php', 'post-new.php'))) {
+			$deps = array('jquery', 'wp-data', 'wp-editor', 'wp-edit-post');
+		}
+
+		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/houzi-description-ai-admin.js', $deps, $this->version, false);
+
+		$post_id = 0;
+		if (in_array($hook, array('post.php', 'post-new.php'))) {
+			$post_id = get_the_ID();
+		}
+
 		wp_localize_script($this->plugin_name, 'houzi_ai_obj', array(
 			'ajax_url' => admin_url('admin-ajax.php'),
 			'nonce' => wp_create_nonce('houzi_ai_nonce'),
+			'post_id' => $post_id,
 		));
 
+	}
+
+	/**
+	 * Add property meta box.
+	 */
+	public function add_property_meta_box()
+	{
+		add_meta_box(
+			'houzi_ai_description_meta_box',
+			__('Houzi AI Description', 'houzi-description-ai'),
+			array($this, 'render_property_meta_box'),
+			'property',
+			'side',
+			'default'
+		);
+	}
+
+	/**
+	 * Render property meta box.
+	 */
+	public function render_property_meta_box($post)
+	{
+		?>
+		<div class="houzi-ai-metabox-content">
+			<button type="button" id="houzi-generate-single-btn" class="button button-primary button-large"
+				style="width: 100%;">
+				<?php _e('Generate AI Description', 'houzi-description-ai'); ?>
+			</button>
+			<div id="houzi-ai-single-status" style="margin-top: 10px; font-size: 13px;"></div>
+		</div>
+		<?php
 	}
 
 	/**
@@ -285,7 +328,10 @@ class Houzi_Description_Ai_Admin
 
 			update_post_meta($post_id, 'ai_content', true);
 
-			wp_send_json_success('Description updated for ' . $title);
+			wp_send_json_success(array(
+				'message' => 'Description updated for ' . $title,
+				'description' => $description
+			));
 		} else {
 			$error_msg = isset($body['error']['message']) ? $body['error']['message'] : 'Failed to generate description.';
 			wp_send_json_error($error_msg);
