@@ -1,17 +1,22 @@
-(function($) {
+(function ($) {
     'use strict';
 
-    $(function() {
+    $(function () {
         var $btn = $('#houzi-generate-btn');
         var $progressContainer = $('#houzi-ai-progress-container');
         var $progressBar = $('#houzi-ai-progress-bar-fill');
         var $progressText = $('#houzi-ai-progress-text');
         var $log = $('#houzi-ai-log');
 
-        $btn.on('click', function(e) {
+        $btn.on('click', function (e) {
             e.preventDefault();
 
-            if (!confirm('Are you sure you want to generate descriptions for ALL published properties? This might take some time.')) {
+            var scope = $('input[name="houzi_ai_scope"]:checked').val();
+            var confirmMsg = scope === 'all'
+                ? 'Are you sure you want to generate descriptions for ALL published properties?'
+                : 'Are you sure you want to generate descriptions for properties without AI content?';
+
+            if (!confirm(confirmMsg)) {
                 return;
             }
 
@@ -21,19 +26,20 @@
             $progressBar.css('width', '0%');
             $progressText.text('0/0');
 
-            // Step 1: Get all property IDs
+            // Step 1: Get property IDs based on scope
             $.ajax({
                 url: houzi_ai_obj.ajax_url,
                 type: 'POST',
                 data: {
                     action: 'houzi_get_total_properties',
+                    scope: scope,
                     nonce: houzi_ai_obj.nonce
                 },
-                success: function(response) {
+                success: function (response) {
                     if (response.success) {
                         var ids = response.data.ids;
                         var total = response.data.total;
-                        
+
                         if (total === 0) {
                             $log.append('<div>No properties found.</div>');
                             $btn.prop('disabled', false).text('Generate Property Description');
@@ -47,7 +53,7 @@
                         $btn.prop('disabled', false).text('Generate Property Description');
                     }
                 },
-                error: function() {
+                error: function () {
                     $log.append('<div style="color:red;">AJAX error while fetching properties.</div>');
                     $btn.prop('disabled', false).text('Generate Property Description');
                 }
@@ -73,7 +79,7 @@
                     post_id: post_id,
                     nonce: houzi_ai_obj.nonce
                 },
-                success: function(response) {
+                success: function (response) {
                     var current = index + 1;
                     var progress = (current / total) * 100;
                     $progressBar.css('width', progress + '%');
@@ -85,10 +91,10 @@
                         $log.append('<div style="color:red;">Error for ID ' + post_id + ': ' + response.data + '</div>');
                     }
                 },
-                error: function() {
+                error: function () {
                     $log.append('<div style="color:red;">AJAX error for ID ' + post_id + '</div>');
                 },
-                complete: function() {
+                complete: function () {
                     processProperties(ids, index + 1, total);
                 }
             });

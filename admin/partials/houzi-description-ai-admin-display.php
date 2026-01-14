@@ -68,6 +68,19 @@
 
     <div class="houzi-ai-section">
         <h2><?php _e('Generate Description', 'houzi-description-ai'); ?></h2>
+
+        <div style="margin-bottom: 20px;">
+            <p><strong><?php _e('Select properties to process:', 'houzi-description-ai'); ?></strong></p>
+            <label style="margin-right: 20px;">
+                <input type="radio" name="houzi_ai_scope" value="all" checked>
+                <?php _e('All Properties', 'houzi-description-ai'); ?>
+            </label>
+            <label>
+                <input type="radio" name="houzi_ai_scope" value="pending">
+                <?php _e('Properties without AI Description', 'houzi-description-ai'); ?>
+            </label>
+        </div>
+
         <div class="houzi-ai-actions">
             <button type="button" id="houzi-generate-btn" class="button button-primary">
                 <?php _e('Generate Property Description', 'houzi-description-ai'); ?>

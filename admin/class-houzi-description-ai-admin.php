@@ -150,12 +150,23 @@ class Houzi_Description_Ai_Admin
 	{
 		check_ajax_referer('houzi_ai_nonce', 'nonce');
 
+		$scope = isset($_POST['scope']) ? sanitize_text_field($_POST['scope']) : 'all';
+
 		$args = array(
 			'post_type' => 'property',
 			'post_status' => 'publish',
 			'posts_per_page' => -1,
 			'fields' => 'ids',
 		);
+
+		if ($scope === 'pending') {
+			$args['meta_query'] = array(
+				array(
+					'key' => 'ai_content',
+					'compare' => 'NOT EXISTS',
+				),
+			);
+		}
 
 		$query = new WP_Query($args);
 		$ids = $query->posts;
@@ -203,18 +214,18 @@ class Houzi_Description_Ai_Admin
 
 		$prompt = "Act as a premium real estate copywriter. Your task is to transform the following raw property data into a compelling, high-conversion property description. 
 
-Guidelines:
-1. Tone: Sophisticated, inviting, and professional.
-2. Structure: 
-   - A captivating opening statement that highlights the property's unique appeal.
-   - A detailed breakdown of key features and interior highlights.
-   - Mention location advantages and lifestyle benefits.
-   - A professional closing that encourages interest.
-3. Content: Focus strictly on the property description. Do not include salutations, introductory remarks, or conversational filler.
-4. Language: Use descriptive, evocative language to help potential buyers visualize the space.
+		Guidelines:
+		1. Tone: Sophisticated, inviting, and professional.
+		2. Structure: 
+		- A captivating opening statement that highlights the property's unique appeal.
+		- A detailed breakdown of key features and interior highlights.
+		- Mention location advantages and lifestyle benefits.
+		- A professional closing that encourages interest.
+		3. Content: Focus strictly on the property description. Do not include salutations, introductory remarks, or conversational filler.
+		4. Language: Use descriptive, evocative language to help potential buyers visualize the space.
 
-Property Data:
-";
+		Property Data:
+		";
 		$prompt .= "Title: " . $title . "\n";
 		if (!empty($property_types)) {
 			$prompt .= "Property Type: " . implode(', ', $property_types) . "\n";
@@ -271,6 +282,8 @@ Property Data:
 				'ID' => $post_id,
 				'post_content' => $description,
 			));
+
+			update_post_meta($post_id, 'ai_content', true);
 
 			wp_send_json_success('Description updated for ' . $title);
 		} else {
