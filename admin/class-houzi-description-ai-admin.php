@@ -201,7 +201,20 @@ class Houzi_Description_Ai_Admin
 		$garage = get_post_meta($post_id, 'fave_property_garage', true);
 		$price = get_post_meta($post_id, 'fave_property_price', true);
 
-		$prompt = "Generate a professional property description for the following property. Focus on getting the description only, no salutations or suggestions.\n\n";
+		$prompt = "Act as a premium real estate copywriter. Your task is to transform the following raw property data into a compelling, high-conversion property description. 
+
+Guidelines:
+1. Tone: Sophisticated, inviting, and professional.
+2. Structure: 
+   - A captivating opening statement that highlights the property's unique appeal.
+   - A detailed breakdown of key features and interior highlights.
+   - Mention location advantages and lifestyle benefits.
+   - A professional closing that encourages interest.
+3. Content: Focus strictly on the property description. Do not include salutations, introductory remarks, or conversational filler.
+4. Language: Use descriptive, evocative language to help potential buyers visualize the space.
+
+Property Data:
+";
 		$prompt .= "Title: " . $title . "\n";
 		if (!empty($property_types)) {
 			$prompt .= "Property Type: " . implode(', ', $property_types) . "\n";
@@ -210,10 +223,10 @@ class Houzi_Description_Ai_Admin
 			$prompt .= "Status: " . implode(', ', $property_status) . "\n";
 		}
 		if (!empty($features)) {
-			$prompt .= "Features: " . implode(', ', $features) . "\n";
+			$prompt .= "Key Features: " . implode(', ', $features) . "\n";
 		}
 		if ($address) {
-			$prompt .= "Location: " . $address . "\n";
+			$prompt .= "Address: " . $address . "\n";
 		}
 		if ($bedrooms) {
 			$prompt .= "Bedrooms: " . $bedrooms . "\n";
@@ -224,8 +237,9 @@ class Houzi_Description_Ai_Admin
 		if ($garage) {
 			$prompt .= "Garage: " . $garage . "\n";
 		}
-		if ($price) {
-			$prompt .= "Price: " . $price . "\n";
+		if ($price && floatval($price) > 0) {
+			$currency = function_exists('houzez_get_currency_symbol') ? houzez_get_currency_symbol() : '$';
+			$prompt .= "Price: " . $currency . $price . "\n";
 		}
 
 		$response = wp_remote_post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$api_key}", array(
