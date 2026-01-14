@@ -16,7 +16,8 @@
     <header class="houzi-ai-header">
         <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
         <div class="houzi-ai-meta">
-            <p><strong><?php _e('Plugin:', 'houzi-description-ai'); ?></strong> Houzi Description AI</p>
+            <p>Enhance your real estate listings powered by Gemini to transform property data into compelling,
+                high-conversion descriptions.</p>
             <p><strong><?php _e('Author:', 'houzi-description-ai'); ?></strong> BooleanBites Ltd</p>
             <p><strong><?php _e('Website:', 'houzi-description-ai'); ?></strong> <a href="https://booleanbites.com"
                     target="_blank">https://booleanbites.com</a></p>
