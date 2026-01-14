@@ -1,0 +1,91 @@
+<?php
+/**
+ * Provide a admin area view for the plugin
+ *
+ * This file is used to markup the admin-facing aspects of the plugin.
+ *
+ * @link       https://https://booleanbites.com
+ * @since      1.0.0
+ *
+ * @package    Houzi_Description_Ai
+ * @subpackage Houzi_Description_Ai/admin/partials
+ */
+?>
+
+<div class="wrap houzi-ai-wrap">
+    <header class="houzi-ai-header">
+        <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+        <div class="houzi-ai-meta">
+            <p><strong><?php _e('Plugin:', 'houzi-description-ai'); ?></strong> Houzi Description AI</p>
+            <p><strong><?php _e('Author:', 'houzi-description-ai'); ?></strong> BooleanBites Ltd</p>
+            <p><strong><?php _e('Website:', 'houzi-description-ai'); ?></strong> <a href="https://booleanbites.com"
+                    target="_blank">https://booleanbites.com</a></p>
+        </div>
+    </header>
+
+    <form method="post" action="options.php">
+        <?php
+        settings_fields('houzi-description-ai');
+        do_settings_sections('houzi-description-ai');
+        ?>
+
+        <div class="houzi-ai-section">
+            <h2><?php _e('AI Setup', 'houzi-description-ai'); ?></h2>
+            <table class="form-table">
+                <tr>
+                    <th scope="row"><label
+                            for="houzi_ai_api_key"><?php _e('API Key', 'houzi-description-ai'); ?></label></th>
+                    <td>
+                        <input type="text" id="houzi_ai_api_key" name="houzi_ai_api_key"
+                            value="<?php echo esc_attr(get_option('houzi_ai_api_key')); ?>" class="regular-text">
+                        <p class="description">
+                            <?php _e('Acquire the API key from ', 'houzi-description-ai'); ?>
+                            <a href="https://aistudio.google.com/app/apikey"
+                                target="_blank"><?php _e('Google AI Studio', 'houzi-description-ai'); ?></a>
+                            <?php _e(' and paste in the above field.', 'houzi-description-ai'); ?>
+                        </p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label
+                            for="houzi_ai_gemini_model"><?php _e('Gemini Model', 'houzi-description-ai'); ?></label>
+                    </th>
+                    <td>
+                        <?php $selected_model = get_option('houzi_ai_gemini_model', 'gemini-flash-latest'); ?>
+                        <select id="houzi_ai_gemini_model" name="houzi_ai_gemini_model">
+                            <option value="gemini-flash-latest" <?php selected($selected_model, 'gemini-flash-latest'); ?>>Gemini Flash</option>
+                            <option value="gemini-flash-lite-latest" <?php selected($selected_model, 'gemini-flash-lite-latest'); ?>>Gemini Flash Lite</option>
+                            <option value="gemini-3-flash-preview" <?php selected($selected_model, 'gemini-3-flash-preview'); ?>>Gemini 3 Flash</option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+            <?php submit_button(); ?>
+        </div>
+    </form>
+
+    <hr>
+
+    <div class="houzi-ai-section">
+        <h2><?php _e('Generate Description', 'houzi-description-ai'); ?></h2>
+        <div class="houzi-ai-actions">
+            <button type="button" id="houzi-generate-btn" class="button button-primary">
+                <?php _e('Generate Property Description', 'houzi-description-ai'); ?>
+            </button>
+        </div>
+
+        <div id="houzi-ai-progress-container" style="display: none; margin-top: 20px;">
+            <div class="houzi-ai-progress-stats">
+                <span id="houzi-ai-progress-text">0/0</span> properties processed.
+            </div>
+            <div class="houzi-ai-progress-bar-bg"
+                style="background: #ddd; height: 20px; width: 100%; border-radius: 10px; overflow: hidden; margin-top: 5px;">
+                <div id="houzi-ai-progress-bar-fill"
+                    style="background: #2271b1; height: 100%; width: 0%; transition: width 0.3s;"></div>
+            </div>
+            <div id="houzi-ai-log"
+                style="margin-top: 10px; max-height: 200px; overflow-y: auto; background: #f0f0f0; padding: 10px; border: 1px solid #ccc; font-family: monospace; font-size: 12px;">
+            </div>
+        </div>
+    </div>
+</div>
