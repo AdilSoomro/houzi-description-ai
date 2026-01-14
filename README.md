@@ -21,6 +21,8 @@ In the competitive real estate market, the quality of your property descriptions
 3. **Model Selection**: Select the Gemini model that best fits your performance and detail requirements.
 4. **Execution**: Use the "Generate Property Description" dashboard to initiate the automated copywriting process for your listings.
 
+![Houzi AI Plugin Preview](preview-plugin.jpg)
+
 ## Workflow Integration
 
 This plugin is designed to be part of a professional real estate workflow:
