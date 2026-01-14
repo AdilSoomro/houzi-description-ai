@@ -2,6 +2,8 @@
 
 Enhance your real estate listings with state-of-the-art AI. **Houzi Description AI** is a professional-grade WordPress plugin designed to seamlessly integrate with the **Houzez Real Estate Theme** and the **Houzi Mobile App** ecosystem. It leverages Google's **Gemini AI** to transform raw property data into compelling, high-conversion descriptions.
 
+![Houzi AI Plugin Preview](preview-plugin.jpg)
+
 ## Overview
 
 In the competitive real estate market, the quality of your property descriptions can make or break a lead. This plugin automates the copywriting process by analyzing structured data from your Houzez-powered website and generating sophisticated, human-like narratives tailored for both web and mobile users.
@@ -21,7 +23,7 @@ In the competitive real estate market, the quality of your property descriptions
 3. **Model Selection**: Select the Gemini model that best fits your performance and detail requirements.
 4. **Execution**: Use the "Generate Property Description" dashboard to initiate the automated copywriting process for your listings.
 
-![Houzi AI Plugin Preview](preview-plugin.jpg)
+
 
 ## Workflow Integration
 

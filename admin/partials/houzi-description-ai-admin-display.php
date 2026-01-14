@@ -68,7 +68,7 @@
     <hr>
 
     <div class="houzi-ai-section">
-        <h2><?php _e('Generate Description', 'houzi-description-ai'); ?></h2>
+        <h2><?php _e('Generate AI Description', 'houzi-description-ai'); ?></h2>
 
         <div style="margin-bottom: 20px;">
             <p><strong><?php _e('Select properties to process:', 'houzi-description-ai'); ?></strong></p>
