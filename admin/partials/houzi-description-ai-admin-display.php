@@ -70,35 +70,83 @@
     <div class="houzi-ai-section">
         <h2><?php _e('Generate AI Description', 'houzi-description-ai'); ?></h2>
 
-        <div style="margin-bottom: 20px;">
-            <p><strong><?php _e('Select properties to process:', 'houzi-description-ai'); ?></strong></p>
-            <label style="margin-right: 20px;">
-                <input type="radio" name="houzi_ai_scope" value="all" checked>
-                <?php _e('All Properties', 'houzi-description-ai'); ?>
-            </label>
-            <label>
-                <input type="radio" name="houzi_ai_scope" value="pending">
-                <?php _e('Properties without AI Description', 'houzi-description-ai'); ?>
-            </label>
-        </div>
-
-        <div class="houzi-ai-actions">
-            <button type="button" id="houzi-generate-btn" class="button button-primary">
-                <?php _e('Generate Property Description', 'houzi-description-ai'); ?>
+        <!-- Properties Section -->
+        <div class="houzi-ai-generation-box"
+            style="margin-bottom: 30px; padding: 20px; background: #fff; border: 1px solid #ccd0d4; border-radius: 4px;">
+            <h3><?php _e('Properties', 'houzi-description-ai'); ?></h3>
+            <div style="margin-bottom: 15px;">
+                <p><strong><?php _e('Select properties to process:', 'houzi-description-ai'); ?></strong></p>
+                <label style="margin-right: 20px;">
+                    <input type="radio" name="houzi_ai_property_scope" value="all" checked>
+                    <?php _e('All Properties', 'houzi-description-ai'); ?>
+                </label>
+                <label>
+                    <input type="radio" name="houzi_ai_property_scope" value="pending">
+                    <?php _e('Properties without AI Description', 'houzi-description-ai'); ?>
+                </label>
+            </div>
+            <button type="button" id="houzi-generate-property-btn" class="button button-primary houzi-bulk-generate-btn"
+                data-type="property">
+                <?php _e('Generate Property Descriptions', 'houzi-description-ai'); ?>
             </button>
         </div>
 
-        <div id="houzi-ai-progress-container" style="display: none; margin-top: 20px;">
+        <!-- Agents Section -->
+        <div class="houzi-ai-generation-box"
+            style="margin-bottom: 30px; padding: 20px; background: #fff; border: 1px solid #ccd0d4; border-radius: 4px;">
+            <h3><?php _e('Agents', 'houzi-description-ai'); ?></h3>
+            <div style="margin-bottom: 15px;">
+                <p><strong><?php _e('Select agents to process:', 'houzi-description-ai'); ?></strong></p>
+                <label style="margin-right: 20px;">
+                    <input type="radio" name="houzi_ai_houzez_agent_scope" value="all" checked>
+                    <?php _e('All Agents', 'houzi-description-ai'); ?>
+                </label>
+                <label>
+                    <input type="radio" name="houzi_ai_houzez_agent_scope" value="pending">
+                    <?php _e('Agents without AI Description', 'houzi-description-ai'); ?>
+                </label>
+            </div>
+            <button type="button" id="houzi-generate-agent-btn" class="button button-primary houzi-bulk-generate-btn"
+                data-type="houzez_agent">
+                <?php _e('Generate Agent Descriptions', 'houzi-description-ai'); ?>
+            </button>
+        </div>
+
+        <!-- Agencies Section -->
+        <div class="houzi-ai-generation-box"
+            style="margin-bottom: 30px; padding: 20px; background: #fff; border: 1px solid #ccd0d4; border-radius: 4px;">
+            <h3><?php _e('Agencies', 'houzi-description-ai'); ?></h3>
+            <div style="margin-bottom: 15px;">
+                <p><strong><?php _e('Select agencies to process:', 'houzi-description-ai'); ?></strong></p>
+                <label style="margin-right: 20px;">
+                    <input type="radio" name="houzi_ai_houzez_agency_scope" value="all" checked>
+                    <?php _e('All Agencies', 'houzi-description-ai'); ?>
+                </label>
+                <label>
+                    <input type="radio" name="houzi_ai_houzez_agency_scope" value="pending">
+                    <?php _e('Agencies without AI Description', 'houzi-description-ai'); ?>
+                </label>
+            </div>
+            <button type="button" id="houzi-generate-agency-btn" class="button button-primary houzi-bulk-generate-btn"
+                data-type="houzez_agency">
+                <?php _e('Generate Agency Descriptions', 'houzi-description-ai'); ?>
+            </button>
+        </div>
+
+        <!-- Shared Progress Component -->
+        <div id="houzi-ai-progress-container"
+            style="display: none; margin-top: 20px; padding: 20px; background: #fff; border: 2px solid #2271b1; border-radius: 4px;">
             <div class="houzi-ai-progress-stats">
-                <span id="houzi-ai-progress-text">0/0</span> properties processed.
+                <strong><span id="houzi-ai-current-type-label">Properties</span>:</strong>
+                <span id="houzi-ai-progress-text">0/0</span> processed.
             </div>
             <div class="houzi-ai-progress-bar-bg"
-                style="background: #ddd; height: 20px; width: 100%; border-radius: 10px; overflow: hidden; margin-top: 5px;">
+                style="background: #ddd; height: 12px; width: 100%; border-radius: 6px; overflow: hidden; margin: 10px 0;">
                 <div id="houzi-ai-progress-bar-fill"
                     style="background: #2271b1; height: 100%; width: 0%; transition: width 0.3s;"></div>
             </div>
             <div id="houzi-ai-log"
-                style="margin-top: 10px; max-height: 200px; overflow-y: auto; background: #f0f0f0; padding: 10px; border: 1px solid #ccc; font-family: monospace; font-size: 12px;">
+                style="margin-top: 10px; max-height: 250px; overflow-y: auto; background: #f9f9f9; padding: 15px; border: 1px solid #ddd; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; font-size: 11px; line-height: 1.5;">
             </div>
         </div>
     </div>

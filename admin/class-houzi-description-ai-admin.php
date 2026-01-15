@@ -105,14 +105,14 @@ class Houzi_Description_Ai_Admin
 			$deps = array('jquery', 'wp-data', 'wp-editor', 'wp-edit-post');
 		}
 
-		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/houzi-description-ai-admin.js', $deps, $this->version, false);
+		wp_enqueue_script($this->plugin_name . '-admin', plugin_dir_url(__FILE__) . 'js/houzi-description-ai-admin.js', $deps, $this->version, true);
 
 		$post_id = 0;
 		if (in_array($hook, array('post.php', 'post-new.php'))) {
 			$post_id = get_the_ID();
 		}
 
-		wp_localize_script($this->plugin_name, 'houzi_ai_obj', array(
+		wp_localize_script($this->plugin_name . '-admin', 'houzi_ai_obj', array(
 			'ajax_url' => admin_url('admin-ajax.php'),
 			'nonce' => wp_create_nonce('houzi_ai_nonce'),
 			'post_id' => $post_id,
@@ -125,14 +125,17 @@ class Houzi_Description_Ai_Admin
 	 */
 	public function add_property_meta_box()
 	{
-		add_meta_box(
-			'houzi_ai_description_meta_box',
-			__('Houzi AI Description', 'houzi-description-ai'),
-			array($this, 'render_property_meta_box'),
-			'property',
-			'side',
-			'default'
-		);
+		$post_types = array('property', 'houzez_agent', 'houzez_agency');
+		foreach ($post_types as $post_type) {
+			add_meta_box(
+				'houzi_ai_description_meta_box',
+				__('Houzi AI Description', 'houzi-description-ai'),
+				array($this, 'render_property_meta_box'),
+				$post_type,
+				'side',
+				'default'
+			);
+		}
 	}
 
 	/**
@@ -189,14 +192,15 @@ class Houzi_Description_Ai_Admin
 	/**
 	 * AJAX handler to get total properties.
 	 */
-	public function houzi_get_total_properties()
+	public function houzi_get_total_posts()
 	{
 		check_ajax_referer('houzi_ai_nonce', 'nonce');
 
 		$scope = isset($_POST['scope']) ? sanitize_text_field($_POST['scope']) : 'all';
+		$post_type = isset($_POST['post_type']) ? sanitize_text_field($_POST['post_type']) : 'property';
 
 		$args = array(
-			'post_type' => 'property',
+			'post_type' => $post_type,
 			'post_status' => 'publish',
 			'posts_per_page' => -1,
 			'fields' => 'ids',
@@ -244,57 +248,104 @@ class Houzi_Description_Ai_Admin
 			wp_send_json_error('Post not found.');
 		}
 
+		$post_type = $post->post_type;
 		$title = get_the_title($post_id);
-		$property_types = wp_get_post_terms($post_id, 'property_type', array('fields' => 'names'));
-		$property_status = wp_get_post_terms($post_id, 'property_status', array('fields' => 'names'));
-		$features = wp_get_post_terms($post_id, 'property_feature', array('fields' => 'names'));
+		$prompt_data = "";
 
-		$address = get_post_meta($post_id, 'fave_property_map_address', true);
-		$bedrooms = get_post_meta($post_id, 'fave_property_bedrooms', true);
-		$bathrooms = get_post_meta($post_id, 'fave_property_bathrooms', true);
-		$garage = get_post_meta($post_id, 'fave_property_garage', true);
-		$price = get_post_meta($post_id, 'fave_property_price', true);
+		if ($post_type === 'property') {
+			$property_types = wp_get_post_terms($post_id, 'property_type', array('fields' => 'names'));
+			$property_status = wp_get_post_terms($post_id, 'property_status', array('fields' => 'names'));
+			$features = wp_get_post_terms($post_id, 'property_feature', array('fields' => 'names'));
 
-		$prompt = "Act as a premium real estate copywriter. Your task is to transform the following raw property data into a compelling, high-conversion property description. 
+			$address = get_post_meta($post_id, 'fave_property_map_address', true);
+			$bedrooms = get_post_meta($post_id, 'fave_property_bedrooms', true);
+			$bathrooms = get_post_meta($post_id, 'fave_property_bathrooms', true);
+			$garage = get_post_meta($post_id, 'fave_property_garage', true);
+			$price = get_post_meta($post_id, 'fave_property_price', true);
+
+			$prompt_data .= "Title: " . $title . "\n";
+			if (!empty($property_types))
+				$prompt_data .= "Property Type: " . implode(', ', $property_types) . "\n";
+			if (!empty($property_status))
+				$prompt_data .= "Status: " . implode(', ', $property_status) . "\n";
+			if (!empty($features))
+				$prompt_data .= "Key Features: " . implode(', ', $features) . "\n";
+			if ($address)
+				$prompt_data .= "Address: " . $address . "\n";
+			if ($bedrooms)
+				$prompt_data .= "Bedrooms: " . $bedrooms . "\n";
+			if ($bathrooms)
+				$prompt_data .= "Bathrooms: " . $bathrooms . "\n";
+			if ($garage)
+				$prompt_data .= "Garage: " . $garage . "\n";
+			if ($price && floatval($price) > 0) {
+				$currency = function_exists('houzez_get_currency_symbol') ? houzez_get_currency_symbol() : '$';
+				$prompt_data .= "Price: " . $currency . $price . "\n";
+			}
+
+			$role_instruction = "Act as a premium real estate copywriter. Your task is to transform the following raw property data into a compelling, high-conversion property description.";
+			$structure_instruction = "- A captivating opening statement that highlights the property's unique appeal.
+			- A detailed breakdown of key features and interior highlights.
+			- Mention location advantages and lifestyle benefits.
+			- A professional closing that encourages interest.";
+		} elseif ($post_type === 'houzez_agent') {
+			$company = get_post_meta($post_id, 'fave_agent_company', true);
+			$address = get_post_meta($post_id, 'fave_agent_address', true);
+			$service_area = get_post_meta($post_id, 'fave_agent_service_area', true);
+			$specialties = get_post_meta($post_id, 'fave_agent_specialties', true);
+			$position = get_post_meta($post_id, 'fave_agent_position', true);
+			$extra_des = get_post_meta($post_id, 'fave_agent_des', true);
+
+			$prompt_data .= "Name: " . $title . "\n";
+			if ($company)
+				$prompt_data .= "Company: " . $company . "\n";
+			if ($address)
+				$prompt_data .= "Address: " . $address . "\n";
+			if ($service_area)
+				$prompt_data .= "Service Area: " . $service_area . "\n";
+			if ($specialties)
+				$prompt_data .= "Specialties: " . $specialties . "\n";
+			if ($position)
+				$prompt_data .= "Position: " . $position . "\n";
+			if ($extra_des)
+				$prompt_data .= "Additional Info: " . $extra_des . "\n";
+
+			$role_instruction = "Act as a professional real estate brand specialist. Your task is to create a compelling, trustworthy, and expert agent bio based on the provided data.";
+			$structure_instruction = "- A strong professional opening introducing the agent and their expertise.
+			- Highlight key specialties, service areas, and their unique approach to client service.
+			- A narrative that builds trust and demonstrates market authority.
+			- A call to action that encourages potential clients to reach out.";
+		} elseif ($post_type === 'houzez_agency') {
+			$address = get_post_meta($post_id, 'fave_agency_address', true);
+			if (!$address) {
+				$address = get_post_meta($post_id, 'fave_agency_map_address', true);
+			}
+
+			$prompt_data .= "Agency Name: " . $title . "\n";
+			if ($address)
+				$prompt_data .= "Address: " . $address . "\n";
+
+			$role_instruction = "Act as a premium real estate branding expert. Your task is to craft a sophisticated and authoritative agency description that showcases market leadership and exceptional service.";
+			$structure_instruction = "- An impactful introduction that defines the agency's mission and presence in the market.
+			- Focus on their values, expertise in the local area, and commitment to excellence.
+			- Highlight the range of services or the standard of care clients can expect.
+			- A professional closing that strengthens the brand's identity.";
+		} else {
+			wp_send_json_error('Unsupported post type.');
+		}
+
+		$prompt = "$role_instruction
 
 		Guidelines:
 		1. Tone: Sophisticated, inviting, and professional.
 		2. Structure: 
-		- A captivating opening statement that highlights the property's unique appeal.
-		- A detailed breakdown of key features and interior highlights.
-		- Mention location advantages and lifestyle benefits.
-		- A professional closing that encourages interest.
-		3. Content: Focus strictly on the property description. Do not include salutations, introductory remarks, or conversational filler.
-		4. Language: Use descriptive, evocative language to help potential buyers visualize the space.
+		$structure_instruction
+		3. Content: Focus strictly on the description text. Do not include salutations, introductory remarks, or conversational filler.
+		4. Language: Use descriptive, evocative language to help the reader connect with the subject.
 
-		Property Data:
+		Data:
+		$prompt_data
 		";
-		$prompt .= "Title: " . $title . "\n";
-		if (!empty($property_types)) {
-			$prompt .= "Property Type: " . implode(', ', $property_types) . "\n";
-		}
-		if (!empty($property_status)) {
-			$prompt .= "Status: " . implode(', ', $property_status) . "\n";
-		}
-		if (!empty($features)) {
-			$prompt .= "Key Features: " . implode(', ', $features) . "\n";
-		}
-		if ($address) {
-			$prompt .= "Address: " . $address . "\n";
-		}
-		if ($bedrooms) {
-			$prompt .= "Bedrooms: " . $bedrooms . "\n";
-		}
-		if ($bathrooms) {
-			$prompt .= "Bathrooms: " . $bathrooms . "\n";
-		}
-		if ($garage) {
-			$prompt .= "Garage: " . $garage . "\n";
-		}
-		if ($price && floatval($price) > 0) {
-			$currency = function_exists('houzez_get_currency_symbol') ? houzez_get_currency_symbol() : '$';
-			$prompt .= "Price: " . $currency . $price . "\n";
-		}
 
 		$response = wp_remote_post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$api_key}", array(
 			'headers' => array(

@@ -164,7 +164,7 @@ class Houzi_Description_Ai
 		$this->loader->add_action('admin_menu', $plugin_admin, 'add_admin_menu');
 		$this->loader->add_action('admin_init', $plugin_admin, 'register_settings');
 		$this->loader->add_action('wp_ajax_houzi_generate_description', $plugin_admin, 'houzi_generate_description');
-		$this->loader->add_action('wp_ajax_houzi_get_total_properties', $plugin_admin, 'houzi_get_total_properties');
+		$this->loader->add_action('wp_ajax_houzi_get_total_posts', $plugin_admin, 'houzi_get_total_posts');
 		$this->loader->add_action('add_meta_boxes', $plugin_admin, 'add_property_meta_box');
 
 	}
